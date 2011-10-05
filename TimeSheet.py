@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import csv,time,sys
+import csv,time,sys,getopt
 
 class TimeSheet:
 	'''Provides easy computation on timesheets. The sheet is a simple CSV file and 
@@ -92,15 +92,24 @@ class TimeSheet:
 
 
 if __name__ == '__main__':
-	args = sys.argv[1:]
-	print args
-	csvIn = args[0]
-	ts = TimeSheet(csvIn)
-	if len(args) == 1:
-		ts.sum()
-	elif len(args) == 3:
-		getattr(ts, 'sum' + args[1].capitalize())(args[2])
-	elif len(args) == 4:
-		ts.sumBetween(args[2], args[3])
-	print ts.hours()
-	print ts.days()
+	csvIn = sys.argv[1]
+	args = sys.argv[2:]
+	timesheet= TimeSheet(csvIn)
+	bounds = []
+	op = None
+	options, remainder = getopt.getopt(args, 'b:a:', ['before=', 'after='])
+	for opt, arg in options:
+		if (opt in ('-a', '--after')):
+			bounds = [arg] + bounds
+			op = 'After'
+		elif (opt in ('-b', '--before')):
+			bounds += [arg]
+			op = 'Before'
+	if len(bounds) == 0:
+		timesheet.sum()
+	elif len(bounds) == 2:
+		timesheet.sumBetween(bounds[0], bounds[1])
+	else:
+		getattr(timesheet, 'sum' + op)(bounds[0])
+	print timesheet.hours()
+	print timesheet.days()
