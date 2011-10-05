@@ -1,4 +1,7 @@
 = Readme
+Simple command line tool to compute sums over time sheets. The main goal is to pretend to not forget everything 
+about python.
+
 == Usage
 Here is a bunch of sample commands :
 * ./TimeSheet.py file.csv after 2009-10-04
