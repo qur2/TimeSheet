@@ -1,0 +1,10 @@
+= Readme
+== Usage
+Here is a bunch of sample commands :
+* ./TimeSheet.py file.csv after 2009-10-04
+* ./TimeSheet.py file.csv after 1998-03
+* ./TimeSheet.py file.csv before 2022-02-22
+* ./TimeSheet.py file.csv between 2000 2001-06
+
+It's helpful to know that dates are stored as plain text. So the format isn't modifiable but it allows easy and 
+quick partial dates usage (including me :).
