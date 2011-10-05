@@ -73,18 +73,22 @@ class TimeSheet:
 	
 	def hours(self, mih=60):
 		'''Returns a tuple containing the sum expressed as hours and minutes.'''
-		h = self._sum / mih
-		m = self._sum % mih
-		return (h, m)
+		signum = 1 if self._sum >= 0 else -1
+		absSum = abs(self._sum)
+		h = absSum / mih
+		m = absSum % mih
+		return (signum * h, signum * m)
 
 	def days(self, mid=456, mih=60):
 		'''Returns a tuple containing the sum expressed as days, hours and minutes.'''
-		d = self._sum / mid
-		left = self._sum - d * mid
+		signum = 1 if self._sum >= 0 else -1
+		absSum = abs(self._sum)
+		d = absSum / mid
+		left = absSum - d * mid
 		left, self._sum = self._sum, left
 		h, m = self.hours()
 		self._sum, left = left, self._sum
-		return (d, h, m)
+		return (signum * d, signum * h, signum * m)
 
 
 if __name__ == '__main__':
