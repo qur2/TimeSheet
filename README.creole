@@ -3,11 +3,23 @@ Simple command line tool to compute sums over time sheets. The main goal is to p
 about python.
 
 == Usage
-Here is a bunch of sample commands :
-* ./TimeSheet.py file.csv after 2009-10-04
-* ./TimeSheet.py file.csv after 1998-03
-* ./TimeSheet.py file.csv before 2022-02-22
-* ./TimeSheet.py file.csv between 2000 2001-06
+Here is a bunch of simple commands, using date bounds :
+* ./TimeSheet.py file.csv
+* ./TimeSheet.py file.csv -a 2009-10-04
+* ./TimeSheet.py file.csv --after 1998-03
+* ./TimeSheet.py file.csv -b 2022-02-22
+* ./TimeSheet.py file.csv --before 2022-02-22
+* ./TimeSheet.py file.csv -a 2000 -b 2001-06
+
+Here is another bunch of commands, using grouping options :
+* ./TimeSheet.py file.csv --cols=AM,PM
+* ./TimeSheet.py file.csv --cols=AM,PM+AM
+* ./TimeSheet.py file.csv --cols=1,2+AM
+
 
 It's helpful to know that dates are stored as plain text. So the format isn't modifiable but it allows easy and 
 quick partial dates usage (including me :).
+
+== Feature (most recent first)
+* **2011-10-09** Added column grouping option
+* **2011-10-05** Refined time filtering options to use standard syntax
