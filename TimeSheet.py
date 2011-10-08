@@ -16,16 +16,23 @@ class TimeSheet:
 		self.csvSource = csvSource
 		self.csv = open(self.csvSource, 'rb')
 		self.csvReader = csv.reader(self.csv, dialect)
+		self._counters = [Counter('*', [1, 2])]
 		self.resetBounds()
 		self.resetSum()
 	
+	def setCols(self, cols):
+		colgroups = cols.split(',')
+		for group in colgroups:
+			self._counters += [Counter(group, [int(i) for i in group.split('+')])]
+
 	def resetBounds(self):
 		'''Reset the bounds to sentinel values.'''
 		self.bounds = {'lower': '1111-01-01', 'upper': '9999-01-01'}
 	
 	def resetSum(self, n=0):
-		'''Reset the sum to a given value that defaults to 0.'''
-		self._sum = n
+		'''Reset the sum to a given value that defaults to 0 and rewind the file reader.'''
+		for counter in self._counters:
+			counter.reset(n)
 		self.csv.seek(0)
 
 	def sumBetween(self, lower, upper):
@@ -51,26 +58,51 @@ class TimeSheet:
 
 	def sum(self):
 		'''Computes the sum for timesheet entries between the instance date bounds.'''
-		if self._sum:
-			return _sum
 		for line in self.csvReader:
 			if self.bounds['lower'] <= line[0] and line[0] <= self.bounds['upper']:
-				self._sum += self._toMinutes(line[1]) + self._toMinutes(line[2])
+				for counter in self._counters:
+					counter.feed(line)
 		return self
-	
-	def _duration(self, start, end):
-		'''Computes the duration between 2 dates (that are in the same 24h interval), in minutes.'''
-		start = start.split('h')
-		end = end.split('h')
-		if start[0] > end[0]:
-			end[0] = int(end[0]) + 24
-		return (int(end[0]) - int(start[0])) * 60 + int(end[1]) - int(start[1])
+
+	def __str__(self):
+		o = '';
+		for c in self._counters:
+			o += c.name + ' : ' + c.days().__str__() + '\n'
+		return o
+
+
+class Counter:
+	def __init__(self, name, hits):
+		self.name = name
+		self._hits = hits
+		self.reset()
+
+	def feed(self, line):
+		for hit in self._hits:
+			self._sum += self._toMinutes(line[hit])
 	
 	def _toMinutes(self, hm):
-		'''Converts a duration expressed as HH:MM in minutes.'''
+		'''Converts a duration expressed as HHhMM in minutes.'''
 		h, m = hm.split('h')
 		return int(h) * 60 + int(m)
 	
+	# def _duration(self, start, end):
+	# 	'''Computes the duration between 2 dates (that are in the same 24h interval), in minutes.'''
+	# 	start = start.split('h')
+	# 	end = end.split('h')
+	# 	if start[0] > end[0]:
+	# 		end[0] = int(end[0]) + 24
+	# 	return (int(end[0]) - int(start[0])) * 60 + int(end[1]) - int(start[1])
+
+	def getSum(self):
+		return self._sum
+
+	def reset(self, n=0):
+		self._sum = n
+	
+	def __str__(self):
+		return self.name + ' : ' + self.days().__str__()
+
 	def hours(self, mih=60):
 		'''Returns a tuple containing the sum expressed as hours and minutes.'''
 		signum = 1 if self._sum >= 0 else -1
@@ -89,6 +121,7 @@ class TimeSheet:
 		h, m = self.hours()
 		self._sum, left = left, self._sum
 		return (signum * d, signum * h, signum * m)
+			
 
 
 if __name__ == '__main__':
@@ -97,7 +130,7 @@ if __name__ == '__main__':
 	timesheet= TimeSheet(csvIn)
 	bounds = []
 	op = None
-	options, remainder = getopt.getopt(args, 'b:a:', ['before=', 'after='])
+	options, remainder = getopt.getopt(args, 'b:a:', ['before=', 'after=', 'cols='])
 	for opt, arg in options:
 		if (opt in ('-a', '--after')):
 			bounds = [arg] + bounds
@@ -105,11 +138,12 @@ if __name__ == '__main__':
 		elif (opt in ('-b', '--before')):
 			bounds += [arg]
 			op = 'Before'
+		elif (opt in ('--cols')):
+			timesheet.setCols(arg)
 	if len(bounds) == 0:
 		timesheet.sum()
 	elif len(bounds) == 2:
 		timesheet.sumBetween(bounds[0], bounds[1])
 	else:
 		getattr(timesheet, 'sum' + op)(bounds[0])
-	print timesheet.hours()
-	print timesheet.days()
+	print timesheet
