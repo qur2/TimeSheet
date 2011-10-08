@@ -1,0 +1,22 @@
+The idea is to handle many labelled columns from CSV files and provide filtering on them.
+
+
+Sample CSV :
+
+      date	   AM      PM
+2010-10-18	00h30	04h00
+2010-10-19	00h30	07h30
+2010-10-20	00h30	00h00
+2010-10-26	00h00	00h30
+
+
+Sample commands :
+
+prompt$> ./TimeSheet.py file.csv before 2010-10-20 AM
+(1, 30)
+
+prompt$> ./TimeSheet.py file.csv before 2010-10-20 AM,PM
+(1, 30), (12, 0)
+
+prompt$> ./TimeSheet.py file.csv before 2010-10-20 AM+PM
+(13, 30)
