@@ -4,24 +4,26 @@ import csv,time,sys,getopt
 
 class TimeSheet:
 	'''Provides easy computation on timesheets. The sheet is a simple CSV file and 
-	a CSV line should match this pattern : YYYY-MM-DD	HH:SS	HH:SS
-	The 1st element is the date, the second is the amount of time spent in the morning
-	and the last is the amount of time spent afternoon.
+	a CSV line has to begin with the date (YYYY-MM-SS) follow by time entries (HHhSS).
 	
-	Various functions are provided to compute the global sum and before, after or between dates.
-	The sum can be expressed in hours and minutes or in days, hours and minutes.
+	Various functions are provided to compute the sum before, after or between dates.
+
+	Groups can be specified to sum specific (group of) columns.
 	'''
 
 	def __init__(self, csvSource, dialect="excel-tab"):
 		self.csvSource = csvSource
 		self.csv = open(self.csvSource, 'rb')
 		self.csvReader = csv.reader(self.csv, dialect)
-		self._getHeaders()
+		self._getHeader()
 		self._counters = [Counter('*', [1, 2])]
 		self.resetBounds()
 		self.resetSum()
 	
 	def setGroups(self, cols):
+		'''Reads col argument and instantiates counters according to it.
+		Columns are grouped using a "+" and groups are separated by a ",".
+		Column index or CSV column header (if present) can be used to specify groups.'''
 		colgroups = cols.split(',')
 		for group in colgroups:
 			hits = []
@@ -29,14 +31,15 @@ class TimeSheet:
 				try:
 					hits += [int(i)]
 				except ValueError:
-					hits += [self._headers.index(i)]
+					hits += [self._header.index(i)]
 			self._counters += [Counter(group, hits)]
 
-	def _getHeaders(self):
+	def _getHeader(self):
+		'''Reads the CSV header. If found, the first row is used as header. If not, the column count is used.'''
 		csvSample = self.csv.read(1024)
 		self.csv.seek(0)
 		hasHeader = csv.Sniffer().has_header(csvSample)
-		self._headers = self.csvReader.next() if hasHeader else range(len(self.csvReader.next()))
+		self._header = self.csvReader.next() if hasHeader else range(len(self.csvReader.next()))
 
 	def resetBounds(self):
 		'''Reset the bounds to sentinel values.'''
@@ -85,12 +88,15 @@ class TimeSheet:
 
 
 class Counter:
+	'''Sums up CSV line values. To compute the sum, the counter is fed with complete CSV lines.
+	The hits property holds the column indice that the counter has to sum up.'''
 	def __init__(self, name, hits):
 		self.name = name
 		self._hits = hits
 		self.reset()
 
 	def feed(self, line):
+		'''Feeds the counter and increases the sum.'''
 		for hit in self._hits:
 			self._sum += self._toMinutes(line[hit])
 	
@@ -108,9 +114,11 @@ class Counter:
 	# 	return (int(end[0]) - int(start[0])) * 60 + int(end[1]) - int(start[1])
 
 	def getSum(self):
+		'''Returns the sum.'''
 		return self._sum
 
 	def reset(self, n=0):
+		'''Resets the sum to a value defaulting to 0.'''
 		self._sum = n
 	
 	def __str__(self):
