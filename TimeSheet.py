@@ -16,14 +16,27 @@ class TimeSheet:
 		self.csvSource = csvSource
 		self.csv = open(self.csvSource, 'rb')
 		self.csvReader = csv.reader(self.csv, dialect)
+		self._getHeaders()
 		self._counters = [Counter('*', [1, 2])]
 		self.resetBounds()
 		self.resetSum()
 	
-	def setCols(self, cols):
+	def setGroups(self, cols):
 		colgroups = cols.split(',')
 		for group in colgroups:
-			self._counters += [Counter(group, [int(i) for i in group.split('+')])]
+			hits = []
+			for i in group.split('+'):
+				try:
+					hits += [int(i)]
+				except ValueError:
+					hits += [self._headers.index(i)]
+			self._counters += [Counter(group, hits)]
+
+	def _getHeaders(self):
+		csvSample = self.csv.read(1024)
+		self.csv.seek(0)
+		hasHeader = csv.Sniffer().has_header(csvSample)
+		self._headers = self.csvReader.next() if hasHeader else range(len(self.csvReader.next()))
 
 	def resetBounds(self):
 		'''Reset the bounds to sentinel values.'''
@@ -121,7 +134,6 @@ class Counter:
 		h, m = self.hours()
 		self._sum, left = left, self._sum
 		return (signum * d, signum * h, signum * m)
-			
 
 
 if __name__ == '__main__':
@@ -130,7 +142,7 @@ if __name__ == '__main__':
 	timesheet= TimeSheet(csvIn)
 	bounds = []
 	op = None
-	options, remainder = getopt.getopt(args, 'b:a:', ['before=', 'after=', 'cols='])
+	options, remainder = getopt.getopt(args, 'b:a:', ['before=', 'after=', 'groups='])
 	for opt, arg in options:
 		if (opt in ('-a', '--after')):
 			bounds = [arg] + bounds
@@ -138,8 +150,8 @@ if __name__ == '__main__':
 		elif (opt in ('-b', '--before')):
 			bounds += [arg]
 			op = 'Before'
-		elif (opt in ('--cols')):
-			timesheet.setCols(arg)
+		elif (opt in ('--groups')):
+			timesheet.setGroups(arg)
 	if len(bounds) == 0:
 		timesheet.sum()
 	elif len(bounds) == 2:
