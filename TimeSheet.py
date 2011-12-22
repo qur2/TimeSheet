@@ -36,6 +36,10 @@ class TimeSheet:
                 except ValueError:
                     hits += [self._header.index(i)]
             self._counters += [Counter(group, hits)]
+    
+    def setCounterSigns(self, sign):
+        for counter in self._counters:
+            counter._sign = sign
 
     def _header(self):
         '''Reads the CSV header. If found, the first row is used as header. If not, the column count is used.'''
