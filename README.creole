@@ -16,10 +16,14 @@ Here is another bunch of commands, using grouping options :
 * ./TimeSheet.py file.csv --cols=AM,PM+AM
 * ./TimeSheet.py file.csv --cols=1,2+AM
 
+Here is a some commands to show the signum option :
+* ./TimeSheet.py file.csv --sign=+
+* ./TimeSheet.py file.csv --sign=-
 
 It's helpful to know that dates are stored as plain text. So the format isn't modifiable but it allows easy and 
 quick partial dates usage (including me :).
 
 == Feature (most recent first)
+* **2011-12-22** Added signum option
 * **2011-10-09** Added column grouping option
 * **2011-10-05** Refined time filtering options to use standard syntax
