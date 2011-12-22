@@ -100,6 +100,7 @@ class Counter:
     def __init__(self, name, hits):
         self.name = name
         self._hits = hits
+        self._sign = None
         self.reset()
 
     def reset(self, n=0):
@@ -109,7 +110,13 @@ class Counter:
     def feed(self, line):
         '''Feeds the counter and increases the sum.'''
         for hit in self._hits:
-            self._sum += self._toMinutes(line[hit])
+            minutes = self._toMinutes(line[hit])
+            if None == self._sign:
+                self._sum += minutes
+            elif 0 > minutes and '-' == self._sign:
+                self._sum += minutes
+            elif 0 < minutes and '+' == self._sign:
+                self._sum += minutes
     
     def _toMinutes(self, hm):
         '''Converts a duration expressed as HHhMM in minutes.'''
