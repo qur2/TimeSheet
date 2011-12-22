@@ -98,6 +98,10 @@ class Counter:
         self._hits = hits
         self.reset()
 
+    def reset(self, n=0):
+        '''Resets the sum to a value defaulting to 0.'''
+        self._sum = n
+
     def feed(self, line):
         '''Feeds the counter and increases the sum.'''
         for hit in self._hits:
@@ -119,10 +123,6 @@ class Counter:
     def getSum(self):
         '''Returns the sum.'''
         return self._sum
-
-    def reset(self, n=0):
-        '''Resets the sum to a value defaulting to 0.'''
-        self._sum = n
     
     def __str__(self):
         return self.name + ' : ' + self.days().__str__()
