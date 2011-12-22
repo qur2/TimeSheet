@@ -153,7 +153,8 @@ if __name__ == '__main__':
     timesheet= TimeSheet(csvIn)
     bounds = []
     op = None
-    options, remainder = getopt.getopt(args, 'b:a:', ['before=', 'after=', 'groups='])
+    options, remainder = getopt.getopt(args, 'b:a:', ['before=', 'after=', 'groups=', 'sign='])
+    print options, remainder
     for opt, arg in options:
         if (opt in ('-a', '--after')):
             bounds = [arg] + bounds
@@ -163,6 +164,8 @@ if __name__ == '__main__':
             op = 'Before'
         elif (opt in ('--groups')):
             timesheet.setGroups(arg)
+        elif (opt in ('--sign')):
+            timesheet.setCounterSigns(arg)
     if len(bounds) == 0:
         timesheet.sum()
     elif len(bounds) == 2:
