@@ -36,6 +36,10 @@ class TimeSheet:
                 except ValueError:
                     hits += [self._header.index(i)]
             self._counters += [Counter(group, hits)]
+    
+    def setCounterSigns(self, sign):
+        for counter in self._counters:
+            counter._sign = sign
 
     def _header(self):
         '''Reads the CSV header. If found, the first row is used as header. If not, the column count is used.'''
@@ -96,12 +100,23 @@ class Counter:
     def __init__(self, name, hits):
         self.name = name
         self._hits = hits
+        self._sign = None
         self.reset()
+
+    def reset(self, n=0):
+        '''Resets the sum to a value defaulting to 0.'''
+        self._sum = n
 
     def feed(self, line):
         '''Feeds the counter and increases the sum.'''
         for hit in self._hits:
-            self._sum += self._toMinutes(line[hit])
+            minutes = self._toMinutes(line[hit])
+            if None == self._sign:
+                self._sum += minutes
+            elif 0 > minutes and '-' == self._sign:
+                self._sum += minutes
+            elif 0 < minutes and '+' == self._sign:
+                self._sum += minutes
     
     def _toMinutes(self, hm):
         '''Converts a duration expressed as HHhMM in minutes.'''
@@ -119,10 +134,6 @@ class Counter:
     def getSum(self):
         '''Returns the sum.'''
         return self._sum
-
-    def reset(self, n=0):
-        '''Resets the sum to a value defaulting to 0.'''
-        self._sum = n
     
     def __str__(self):
         return self.name + ' : ' + self.days().__str__()
@@ -153,7 +164,8 @@ if __name__ == '__main__':
     timesheet= TimeSheet(csvIn)
     bounds = []
     op = None
-    options, remainder = getopt.getopt(args, 'b:a:', ['before=', 'after=', 'groups='])
+    options, remainder = getopt.getopt(args, 'b:a:', ['before=', 'after=', 'groups=', 'sign='])
+    print options, remainder
     for opt, arg in options:
         if (opt in ('-a', '--after')):
             bounds = [arg] + bounds
@@ -163,6 +175,8 @@ if __name__ == '__main__':
             op = 'Before'
         elif (opt in ('--groups')):
             timesheet.setGroups(arg)
+        elif (opt in ('--sign')):
+            timesheet.setCounterSigns(arg)
     if len(bounds) == 0:
         timesheet.sum()
     elif len(bounds) == 2:
